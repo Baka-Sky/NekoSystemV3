@@ -134,7 +134,7 @@ py/bigboard.txt
 
 # 📄 许可证
 
-MIT License
+GPL3.0 License
 
 ---
 
