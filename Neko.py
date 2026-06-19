@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 import time
 import threading
 import re
@@ -9,7 +10,6 @@ import subprocess
 import platform
 import sys
 import select
-import os
 import json
 import urllib.request
 
@@ -30,8 +30,11 @@ mcpi_conn.Connection.receive = new_receive
 import mcpi.minecraft as minecraft
 from openai import OpenAI
 
-# ================== 讯飞星火 Lite 配置 ==================
-XFYUN_API_KEY = "RTpdiILMTOFkdqGHPiWe:WsjWqZZYHWquATwixaEI"
+# ================== 从环境变量读取敏感配置 ==================
+XFYUN_API_KEY = os.environ.get("XFYUN_API_KEY")
+if not XFYUN_API_KEY:
+    raise EnvironmentError("请设置环境变量 XFYUN_API_KEY")
+
 XFYUN_BASE_URL = "https://spark-api-open.xf-yun.com/v1/"
 XFYUN_MODEL = "lite"
 
@@ -55,8 +58,12 @@ class NekoSystemMonitor:
         self.restart_requested = False
         self.shutdown_requested = False
         
-        self.admin_password = "jianghao0523"
+        # 从环境变量读取管理员密码
+        self.admin_password = os.environ.get("NEKO_PASSWORD")
+        if not self.admin_password:
+            raise EnvironmentError("请设置环境变量 NEKO_PASSWORD")
         
+        # 大事报文件路径
         self.bigboard_path = os.path.join(os.path.dirname(__file__), "py", "bigboard.txt")
         os.makedirs(os.path.dirname(self.bigboard_path), exist_ok=True)
         if not os.path.exists(self.bigboard_path):
@@ -394,7 +401,7 @@ class NekoSystemMonitor:
         except Exception as e:
             print(f"发送系统报告时出错: {e}")
     
-    # ----- 帮助信息（nekoai 改为空格） -----
+    # ----- 帮助信息 -----
     def send_help(self, source="console"):
         help_messages = [
             "§6=== NekoSystem v3 帮助 ===",
@@ -478,7 +485,7 @@ class NekoSystemMonitor:
         
         # ---- AI 提问（新格式：nekoai 问题） ----
         if lower_cmd.startswith("nekoai "):
-            question = command[7:].strip()  # 去掉 "nekoai " 前缀
+            question = command[7:].strip()
             if not question:
                 if source == "console":
                     print("请提供问题，例如：nekoai 今天天气怎么样？")
@@ -495,7 +502,6 @@ class NekoSystemMonitor:
             else:
                 self.mc.postToChat(f"§b【NekoAI】§f{answer}")
             return
-        # 如果只输入 nekoai 没有空格，提示格式
         if lower_cmd == "nekoai":
             if source == "console":
                 print("请使用格式：nekoai 问题")
@@ -539,7 +545,6 @@ class NekoSystemMonitor:
             return
         
         # ---- 大事报 ----
-        # 检查是否是修改命令：nekobig 新内容 密码
         if lower_cmd.startswith("nekobig ") and not lower_cmd in ["nekobig", "neko big"]:
             rest = command[7:].strip()
             parts = rest.rsplit(' ', 1)
@@ -555,7 +560,6 @@ class NekoSystemMonitor:
                     self.mc.postToChat("§c格式错误，请使用：nekobig 新内容 [密码]")
                 return
         
-        # 读取大事报
         if lower_cmd in ["neko big", "nekobig"]:
             if source == "console":
                 print("读取大事报...")
@@ -700,8 +704,8 @@ class NekoSystemMonitor:
         self.console_thread = threading.Thread(target=self.console_listener)
         self.console_thread.daemon = True
         self.console_thread.start()
-        print(f"NekoSystem v3 已启动， ")
-        self.mc.postToChat(f"§aNekoSystem v3 已启动")
+        print(f"NekoSystem v3 已启动，每 {self.interval/60} 分钟报告一次")
+        self.mc.postToChat(f"§aNekoSystem v3 已启动，每 {self.interval/60} 分钟报告一次")
         self.mc.postToChat("§a输入 'neko' 查看可用命令")
     
     def stop(self):
