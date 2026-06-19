@@ -4,7 +4,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python)
 ![MCPI](https://img.shields.io/badge/MCPI-1.0+-green)
-![License](https://img.shields.io/badge/License-MIT-yellow)
+![License](https://img.shields.io/badge/License-GPL3-yellow)
 ![讯飞星火](https://img.shields.io/badge/讯飞星火-Lite-red)
 
 ---
